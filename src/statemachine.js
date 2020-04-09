@@ -54,14 +54,26 @@ class StateMachine {
         }
         let state = 0;
         for (let letter = 0; letter < word.length; letter++) {
-            let next = this.#states[state][word[letter]];
+            if (state < 0 || state >= this.#states.length) {
+                throw Error("State out of bounds " + state);
+            }
+            let currentState = this.#states[state];
+            if (typeof currentState === "undefined" && state !== 'E') {
+                throw Error("State not found: " + state);
+            }
+            let next = currentState[word[letter]];
             if (this.#debug) {
                 console.log(word[letter] + ':' + state + ' -> ' + next);
             }
             if (typeof next === 'undefined') {
                 return {
                     success: false,
-                    error: 'Unexpected letter ${word[letter]} at ${letter} in ${word}'
+                    error: `Don't know what to do at ${letter}`
+                };
+            } else if (next === 'E') {
+                return {
+                    success: false,
+                    error: `Unexpected letter ${word[letter]} at ${letter} in ${word}`
                 }
             } else if (letter === word.length - 1) {
                 if (this.#terminals.indexOf(next) !== -1) {
@@ -81,3 +93,5 @@ class StateMachine {
         }
     }
 }
+
+module.exports = StateMachine;
