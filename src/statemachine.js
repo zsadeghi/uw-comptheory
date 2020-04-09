@@ -39,4 +39,45 @@ class StateMachine {
         this.add(state);
         this.#terminals.push(this.#states.length - 1);
     }
+
+    test(word) {
+        if (typeof word !== 'string') {
+            throw Error("expected a word");
+        }
+        if (word.length === 0) {
+            if (this.#terminals.indexOf(0) !== -1) {
+                return {
+                    success: true,
+                    error: 'Unexpected end of input'
+                };
+            }
+        }
+        let state = 0;
+        for (let letter = 0; letter < word.length; letter++) {
+            let next = this.#states[state][word[letter]];
+            if (this.#debug) {
+                console.log(word[letter] + ':' + state + ' -> ' + next);
+            }
+            if (typeof next === 'undefined') {
+                return {
+                    success: false,
+                    error: 'Unexpected letter ${word[letter]} at ${letter} in ${word}'
+                }
+            } else if (letter === word.length - 1) {
+                if (this.#terminals.indexOf(next) !== -1) {
+                    return {
+                        success: true,
+                        error: ''
+                    };
+                } else {
+                    return {
+                        success: false,
+                        error: 'Unexpected end of input'
+                    };
+                }
+            } else {
+                state = next;
+            }
+        }
+    }
 }
